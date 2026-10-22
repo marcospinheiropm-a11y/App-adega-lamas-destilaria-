@@ -108,19 +108,19 @@
             <nav className="flex justify-center bg-[#3D2317] text-white text-xs font-bold sticky top-[60px] z-10 shadow-md">
               <button 
                 onClick={() => setAbaAtiva('lista')}
-                className={`flex-1 py-3 text-center border-b-2 transition-all ${abaAtiva === 'lista' ? 'border-[#C5A059] text-[#E6C280] bg-[#4A2D1F]' : 'border-transparent hover:bg-[#4A2D1F]/50 text-gray-300'}`}
+                className={`flex-1 py-3 text-center border-b-2 transition-all ${abaAtiva === 'lista' ? 'border-[#C5A059] text-[#E6C280] bg-[#4A2D1F]' : 'border-transparent text-gray-300'}`}
               >
                 <Icons.List /> Barris ({barris.length})
               </button>
               <button 
                 onClick={() => setAbaAtiva('dashboard')}
-                className={`flex-1 py-3 text-center border-b-2 transition-all ${abaAtiva === 'dashboard' ? 'border-[#C5A059] text-[#E6C280] bg-[#4A2D1F]' : 'border-transparent hover:bg-[#4A2D1F]/50 text-gray-300'}`}
+                className={`flex-1 py-3 text-center border-b-2 transition-all ${abaAtiva === 'dashboard' ? 'border-[#C5A059] text-[#E6C280] bg-[#4A2D1F]' : 'border-transparent text-gray-300'}`}
               >
                 <Icons.Chart /> Resumo
               </button>
               <button 
                 onClick={() => setAbaAtiva('novo')}
-                className={`flex-1 py-3 text-center border-b-2 transition-all ${abaAtiva === 'novo' ? 'border-[#C5A059] text-[#E6C280] bg-[#4A2D1F]' : 'border-transparent hover:bg-[#4A2D1F]/50 text-gray-300'}`}
+                className={`flex-1 py-3 text-center border-b-2 transition-all ${abaAtiva === 'novo' ? 'border-[#C5A059] text-[#E6C280] bg-[#4A2D1F]' : 'border-transparent text-gray-300'}`}
               >
                 <Icons.Plus /> Novo Barril
               </button>
@@ -139,7 +139,7 @@
                       placeholder="🔍 Buscar por ID, madeira ou lote..."
                       value={filtro}
                       onChange={(e) => setFiltro(e.target.value)}
-                      className="w-full p-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-[#2D1810]"
+                      className="w-full p-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none"
                     />
                     <div className="flex gap-1 text-xs">
                       {['Todos', 'Em Maturação', 'Pronto para Envase'].map(st => (
@@ -203,7 +203,7 @@
                 </div>
               )}
 
-              {/* ABA RESUMO / METRICAS */}
+              {/* ABA RESUMO */}
               {abaAtiva === 'dashboard' && (
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-3">
@@ -247,7 +247,7 @@
                       placeholder="Ex: B-004"
                       value={novoBarril.id}
                       onChange={(e) => setNovoBarril({...novoBarril, id: e.target.value})}
-                      className="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:bg-white focus:outline-none focus:border-[#2D1810]"
+                      className="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:bg-white"
                       required
                     />
                   </div>
@@ -257,7 +257,7 @@
                     <select 
                       value={novoBarril.tipo}
                       onChange={(e) => setNovoBarril({...novoBarril, tipo: e.target.value})}
-                      className="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:bg-white"
+                      className="w-full p-2.5 border rounded-lg text-sm bg-gray-50"
                     >
                       <option>Carvalho Americano</option>
                       <option>Carvalho Francês</option>
@@ -265,7 +265,6 @@
                       <option>Bálsamo</option>
                       <option>Jequitibá Rosa</option>
                       <option>Cana-fístula</option>
-                      <option>Ipê</option>
                     </select>
                   </div>
 
@@ -277,7 +276,7 @@
                         placeholder="Ex: 200"
                         value={novoBarril.capacidade}
                         onChange={(e) => setNovoBarril({...novoBarril, capacidade: e.target.value})}
-                        className="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:bg-white"
+                        className="w-full p-2.5 border rounded-lg text-sm bg-gray-50"
                       />
                     </div>
                     <div>
@@ -285,7 +284,7 @@
                       <select 
                         value={novoBarril.status}
                         onChange={(e) => setNovoBarril({...novoBarril, status: e.target.value})}
-                        className="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:bg-white"
+                        className="w-full p-2.5 border rounded-lg text-sm bg-gray-50"
                       >
                         <option>Em Maturação</option>
                         <option>Pronto para Envase</option>
@@ -298,10 +297,10 @@
                     <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Lote do Destilado</label>
                     <input 
                       type="text" 
-                      placeholder="Ex: L-2024-WHISKY"
+                      placeholder="Ex: L-2024-01"
                       value={novoBarril.lote}
                       onChange={(e) => setNovoBarril({...novoBarril, lote: e.target.value})}
-                      className="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:bg-white"
+                      className="w-full p-2.5 border rounded-lg text-sm bg-gray-50"
                     />
                   </div>
 
@@ -311,21 +310,21 @@
                       type="date" 
                       value={novoBarril.dataEntrada}
                       onChange={(e) => setNovoBarril({...novoBarril, dataEntrada: e.target.value})}
-                      className="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:bg-white"
+                      className="w-full p-2.5 border rounded-lg text-sm bg-gray-50"
                     />
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Observações</label>
                     <textarea 
-                      placeholder="Histórico do barril, tipo de bebida, etc..."
+                      placeholder="Notas adicionais..."
                       value={novoBarril.observacao}
                       onChange={(e) => setNovoBarril({...novoBarril, observacao: e.target.value})}
-                      className="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:bg-white h-20"
+                      className="w-full p-2.5 border rounded-lg text-sm bg-gray-50 h-20"
                     ></textarea>
                   </div>
 
-                  <button type="submit" className="w-full py-3 bg-[#2D1810] text-[#E6C280] font-bold rounded-lg shadow-md hover:bg-[#3D2317] active:scale-[0.98] transition-transform">
+                  <button type="submit" className="w-full py-3 bg-[#2D1810] text-[#E6C280] font-bold rounded-lg shadow">
                     Salvar Registro de Barril
                   </button>
                 </form>
