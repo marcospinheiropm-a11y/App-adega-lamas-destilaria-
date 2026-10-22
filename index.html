@@ -9,7 +9,7 @@
     <!-- React & React DOM -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- Babel para compilar JSX no navegador -->
+    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   </head>
   <body class="bg-[#FDFBF7] text-gray-800">
@@ -18,45 +18,25 @@
     <script type="text/babel">
       const { useState, useEffect } = React;
 
-      // Ícones SVG Inline
-      const Icons = {
-        Barrel: () => (
-          <svg className="w-6 h-6 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-          </svg>
-        ),
-        Plus: () => (
-          <svg className="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-        ),
-        Chart: () => (
-          <svg className="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
-          </svg>
-        ),
-        List: () => (
-          <svg className="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-          </svg>
-        )
-      };
-
       function App() {
         const [barris, setBarris] = useState(() => {
           const salvos = localStorage.getItem('barris_lamas');
           return salvos ? JSON.parse(salvos) : [
-            { id: 'B-001', tipo: 'Carvalho Americano', lote: 'L-2023-A', capacidade: 200, dataEntrada: '2023-01-15', status: 'Em Maturação', observacao: 'Primeiro uso - Whisky' },
-            { id: 'B-002', tipo: 'Carvalho Francês', lote: 'L-2023-B', capacidade: 225, dataEntrada: '2023-03-20', status: 'Em Maturação', observacao: 'Envelhecimento Cachaça' },
-            { id: 'B-003', tipo: 'Amburana', lote: 'L-2024-C', capacidade: 200, dataEntrada: '2024-02-10', status: 'Pronto para Envase', observacao: 'Edição Especial' }
+            { id: 'B-001', tipo: 'Carvalho Americano', liquido: 'Whisky', lote: 'L-2023-A', capacidade: 200, dataEntrada: '2023-01-15', status: 'Em Maturação', observacao: 'Primeiro uso' },
+            { id: 'B-002', tipo: 'Carvalho Francês', liquido: 'Cachaça', lote: 'L-2023-B', capacidade: 225, dataEntrada: '2023-03-20', status: 'Em Maturação', observacao: 'Envelhecimento especial' },
+            { id: 'B-003', tipo: 'Amburana', liquido: 'Cachaça Premium', lote: 'L-2024-C', capacidade: 200, dataEntrada: '2024-02-10', status: 'Pronto para Envase', observacao: 'Edição Ouro' }
           ];
         });
 
         const [abaAtiva, setAbaAtiva] = useState('lista');
-        const [filtro, setFiltro] = useState('');
+        const [busca, setBusca] = useState('');
+        const [filtroMadeira, setFiltroMadeira] = useState('Todas');
+        const [filtroLiquido, setFiltroLiquido] = useState('Todos');
         const [filtroStatus, setFiltroStatus] = useState('Todos');
-        const [novoBarril, setNovoBarril] = useState({ id: '', tipo: 'Carvalho Americano', lote: '', capacidade: '', dataEntrada: '', status: 'Em Maturação', observacao: '' });
+
+        const [novoBarril, setNovoBarril] = useState({
+          id: '', tipo: 'Carvalho Americano', liquido: 'Whisky', lote: '', capacidade: '', dataEntrada: '', status: 'Em Maturação', observacao: ''
+        });
 
         useEffect(() => {
           localStorage.setItem('barris_lamas', JSON.stringify(barris));
@@ -64,27 +44,31 @@
 
         const adicionarBarril = (e) => {
           e.preventDefault();
-          if (!novoBarril.id) return alert('Por favor, informe a identificação do barril.');
+          if (!novoBarril.id) return alert('Informe o número/ID do barril.');
           if (barris.some(b => b.id.toLowerCase() === novoBarril.id.toLowerCase())) {
-            return alert('Já existe um barril cadastrado com essa identificação.');
+            return alert('Já existe um barril com esta identificação.');
           }
           setBarris([...barris, novoBarril]);
-          setNovoBarril({ id: '', tipo: 'Carvalho Americano', lote: '', capacidade: '', dataEntrada: '', status: 'Em Maturação', observacao: '' });
+          setNovoBarril({ id: '', tipo: 'Carvalho Americano', liquido: 'Whisky', lote: '', capacidade: '', dataEntrada: '', status: 'Em Maturação', observacao: '' });
           setAbaAtiva('lista');
         };
 
         const removerBarril = (id) => {
-          if (confirm(`Tem certeza que deseja excluir o barril ${id}?`)) {
+          if (confirm(`Deseja excluir o barril ${id}?`)) {
             setBarris(barris.filter(b => b.id !== id));
           }
         };
 
+        // Filtros combinados por busca, madeira, líquido e status
         const barrisFiltrados = barris.filter(b => {
-          const atendeFiltroTexto = b.id.toLowerCase().includes(filtro.toLowerCase()) ||
-            b.tipo.toLowerCase().includes(filtro.toLowerCase()) ||
-            (b.lote && b.lote.toLowerCase().includes(filtro.toLowerCase()));
-          const atendeFiltroStatus = filtroStatus === 'Todos' || b.status === filtroStatus;
-          return atendeFiltroTexto && atendeFiltroStatus;
+          const atendeBusca = b.id.toLowerCase().includes(busca.toLowerCase()) ||
+                              (b.lote && b.lote.toLowerCase().includes(busca.toLowerCase())) ||
+                              (b.observacao && b.observacao.toLowerCase().includes(busca.toLowerCase()));
+          const atendeMadeira = filtroMadeira === 'Todas' || b.tipo === filtroMadeira;
+          const atendeLiquido = filtroLiquido === 'Todos' || b.liquido === filtroLiquido;
+          const atendeStatus = filtroStatus === 'Todos' || b.status === filtroStatus;
+
+          return atendeBusca && atendeMadeira && atendeLiquido && atendeStatus;
         });
 
         const totalCapacidade = barris.reduce((acc, b) => acc + (Number(b.capacidade) || 0), 0);
@@ -93,60 +77,95 @@
 
         return (
           <div className="min-h-screen pb-12">
-            {/* Cabeçalho */}
+            {/* Cabeçalho Oficial Ajustado */}
             <header className="bg-[#2D1810] text-[#E6C280] p-4 shadow-xl text-center sticky top-0 z-20">
-              <h1 className="text-xl font-extrabold flex items-center justify-center tracking-wide">
-                <Icons.Barrel />
-                ADEGA LAMAS DESTILARIA
+              <h1 className="text-xl font-black tracking-wide uppercase">
+                🛢️ ADEGA LAMAS DESTILARIA
               </h1>
-              <p className="text-xs text-[#C5A059] mt-0.5 uppercase tracking-wider font-semibold">
-                Controle de Maturação & Envelhecimento
+              <p className="text-xs text-[#C5A059] mt-1 font-semibold">
+                Coordenador de Maturação: Marcos Pinheiro
               </p>
             </header>
 
-            {/* Menu de Navegação */}
-            <nav className="flex justify-center bg-[#3D2317] text-white text-xs font-bold sticky top-[60px] z-10 shadow-md">
+            {/* Navegação por Abas */}
+            <nav className="flex justify-center bg-[#3D2317] text-white text-xs font-bold sticky top-[68px] z-10 shadow-md">
               <button 
                 onClick={() => setAbaAtiva('lista')}
                 className={`flex-1 py-3 text-center border-b-2 transition-all ${abaAtiva === 'lista' ? 'border-[#C5A059] text-[#E6C280] bg-[#4A2D1F]' : 'border-transparent text-gray-300'}`}
               >
-                <Icons.List /> Barris ({barris.length})
+                📋 Barris ({barris.length})
               </button>
               <button 
                 onClick={() => setAbaAtiva('dashboard')}
                 className={`flex-1 py-3 text-center border-b-2 transition-all ${abaAtiva === 'dashboard' ? 'border-[#C5A059] text-[#E6C280] bg-[#4A2D1F]' : 'border-transparent text-gray-300'}`}
               >
-                <Icons.Chart /> Resumo
+                📊 Resumo
               </button>
               <button 
                 onClick={() => setAbaAtiva('novo')}
                 className={`flex-1 py-3 text-center border-b-2 transition-all ${abaAtiva === 'novo' ? 'border-[#C5A059] text-[#E6C280] bg-[#4A2D1F]' : 'border-transparent text-gray-300'}`}
               >
-                <Icons.Plus /> Novo Barril
+                ➕ Novo Barril
               </button>
             </nav>
 
             {/* Conteúdo Principal */}
             <main className="max-w-md mx-auto p-4 space-y-4">
 
-              {/* ABA LISTA DE BARRIS */}
               {abaAtiva === 'lista' && (
-                <div className="space-y-4">
-                  {/* Busca e Filtros */}
+                <div className="space-y-3">
+                  {/* Busca e Painel de Filtros Avançados */}
                   <div className="bg-white p-3 rounded-xl border border-[#E6C280]/40 shadow-sm space-y-2">
                     <input 
                       type="text"
-                      placeholder="🔍 Buscar por ID, madeira ou lote..."
-                      value={filtro}
-                      onChange={(e) => setFiltro(e.target.value)}
-                      className="w-full p-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none"
+                      placeholder="🔍 Buscar por ID, lote ou notas..."
+                      value={busca}
+                      onChange={(e) => setBusca(e.target.value)}
+                      className="w-full p-2.5 rounded-lg border text-sm bg-gray-50 focus:bg-white focus:outline-none"
                     />
-                    <div className="flex gap-1 text-xs">
+
+                    {/* Filtro por Madeira */}
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="font-bold text-gray-700 min-w-[60px]">Madeira:</span>
+                      <select 
+                        value={filtroMadeira} 
+                        onChange={(e) => setFiltroMadeira(e.target.value)}
+                        className="w-full p-1.5 border rounded bg-gray-50"
+                      >
+                        <option>Todas</option>
+                        <option>Carvalho Americano</option>
+                        <option>Carvalho Francês</option>
+                        <option>Amburana</option>
+                        <option>Bálsamo</option>
+                        <option>Jequitibá Rosa</option>
+                        <option>Cana-fístula</option>
+                      </select>
+                    </div>
+
+                    {/* Filtro por Líquido */}
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="font-bold text-gray-700 min-w-[60px]">Líquido:</span>
+                      <select 
+                        value={filtroLiquido} 
+                        onChange={(e) => setFiltroLiquido(e.target.value)}
+                        className="w-full p-1.5 border rounded bg-gray-50"
+                      >
+                        <option>Todos</option>
+                        <option>Whisky</option>
+                        <option>Cachaça</option>
+                        <option>Cachaça Premium</option>
+                        <option>Gin</option>
+                        <option>Rum</option>
+                      </select>
+                    </div>
+
+                    {/* Botões de Filtro por Status */}
+                    <div className="flex gap-1 text-[11px] pt-1 border-t">
                       {['Todos', 'Em Maturação', 'Pronto para Envase'].map(st => (
                         <button
                           key={st}
                           onClick={() => setFiltroStatus(st)}
-                          className={`flex-1 py-1.5 rounded-md font-medium transition-colors ${filtroStatus === st ? 'bg-[#2D1810] text-[#E6C280]' : 'bg-gray-100 text-gray-600'}`}
+                          className={`flex-1 py-1 rounded font-medium ${filtroStatus === st ? 'bg-[#2D1810] text-[#E6C280]' : 'bg-gray-100 text-gray-600'}`}
                         >
                           {st}
                         </button>
@@ -154,20 +173,21 @@
                     </div>
                   </div>
 
-                  {/* Lista de Cards */}
+                  {/* Lista de Barris */}
                   {barrisFiltrados.length === 0 ? (
-                    <div className="text-center py-10 text-gray-500 bg-white rounded-xl border p-4">
-                      Nenhum barril encontrado.
+                    <div className="text-center py-8 text-gray-500 bg-white rounded-xl border p-4 text-xs">
+                      Nenhum barril encontrado para os filtros selecionados.
                     </div>
                   ) : (
                     barrisFiltrados.map((b) => (
-                      <div key={b.id} className="bg-white p-4 rounded-xl border border-[#E6C280]/40 shadow-md relative overflow-hidden">
-                        <div className="flex justify-between items-start border-b border-gray-100 pb-2 mb-2">
+                      <div key={b.id} className="bg-white p-4 rounded-xl border border-[#E6C280]/40 shadow-md space-y-2">
+                        <div className="flex justify-between items-start border-b pb-2">
                           <div>
-                            <span className="text-xs font-extrabold bg-[#2D1810] text-[#E6C280] px-2.5 py-1 rounded shadow-sm">
+                            <span className="text-xs font-black bg-[#2D1810] text-[#E6C280] px-2.5 py-0.5 rounded">
                               {b.id}
                             </span>
-                            <h3 className="font-bold text-gray-800 text-base mt-2">{b.tipo}</h3>
+                            <h3 className="font-bold text-gray-800 text-base mt-1">{b.tipo}</h3>
+                            <p className="text-xs font-semibold text-amber-800">🍷 {b.liquido || 'Não especificado'}</p>
                           </div>
                           <div className="text-right">
                             <span className="text-xs font-bold text-amber-900 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200 block">
@@ -179,20 +199,16 @@
                           </div>
                         </div>
 
-                        <div className="text-xs text-gray-600 space-y-1 mt-2">
-                          <p><strong>Lote do Destilado:</strong> {b.lote || 'Não informado'}</p>
+                        <div className="text-xs text-gray-600 space-y-1">
+                          <p><strong>Lote:</strong> {b.lote || 'N/A'}</p>
                           <p><strong>Data de Entrada:</strong> {b.dataEntrada}</p>
-                          {b.observacao && (
-                            <p className="italic text-gray-600 mt-2 bg-[#FDFBF7] p-2 rounded border border-amber-100/60">
-                              "{b.observacao}"
-                            </p>
-                          )}
+                          {b.observacao && <p className="italic text-gray-500 bg-gray-50 p-2 rounded">"{b.observacao}"</p>}
                         </div>
 
-                        <div className="mt-3 pt-2 border-t border-gray-100 flex justify-end">
+                        <div className="pt-2 border-t flex justify-end">
                           <button 
                             onClick={() => removerBarril(b.id)}
-                            className="text-xs text-red-600 font-bold hover:text-red-800 transition-colors"
+                            className="text-xs text-red-600 font-bold hover:underline"
                           >
                             Excluir Registro
                           </button>
@@ -203,40 +219,40 @@
                 </div>
               )}
 
-              {/* ABA RESUMO */}
+              {/* Resumo */}
               {abaAtiva === 'dashboard' && (
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-white p-4 rounded-xl border border-amber-200 shadow-sm text-center">
+                    <div className="bg-white p-4 rounded-xl border border-amber-200 text-center">
                       <p className="text-xs text-gray-500 font-bold uppercase">Total em Estoque</p>
                       <p className="text-2xl font-black text-[#2D1810] mt-1">{barris.length}</p>
-                      <p className="text-[10px] text-gray-400">barris cadastrados</p>
+                      <p className="text-[10px] text-gray-400">barris registrados</p>
                     </div>
-                    <div className="bg-white p-4 rounded-xl border border-amber-200 shadow-sm text-center">
-                      <p className="text-xs text-gray-500 font-bold uppercase">Volume Total</p>
+                    <div className="bg-white p-4 rounded-xl border border-amber-200 text-center">
+                      <p className="text-xs text-gray-500 font-bold uppercase">Capacidade Somada</p>
                       <p className="text-2xl font-black text-[#2D1810] mt-1">{totalCapacidade} L</p>
-                      <p className="text-[10px] text-gray-400">capacidade somada</p>
+                      <p className="text-[10px] text-gray-400">volume total</p>
                     </div>
                   </div>
 
-                  <div className="bg-white p-4 rounded-xl border border-amber-200 shadow-sm space-y-3">
-                    <h3 className="font-bold text-gray-800 text-sm border-b pb-2">Status da Adega</h3>
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="flex items-center"><span className="w-2.5 h-2.5 bg-blue-500 rounded-full mr-2"></span>Em Maturação</span>
+                  <div className="bg-white p-4 rounded-xl border border-amber-200 space-y-2 text-xs">
+                    <h3 className="font-bold text-gray-800 text-sm border-b pb-2">Situação Atual da Adega</h3>
+                    <div className="flex justify-between">
+                      <span>🔵 Em Maturação:</span>
                       <span className="font-bold">{totalEmMaturacao} barris</span>
                     </div>
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="flex items-center"><span className="w-2.5 h-2.5 bg-green-500 rounded-full mr-2"></span>Pronto para Envase</span>
+                    <div className="flex justify-between">
+                      <span>🟢 Pronto para Envase:</span>
                       <span className="font-bold">{totalProntos} barris</span>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* ABA NOVO BARRIL */}
+              {/* Formulário com Madeira e Líquido */}
               {abaAtiva === 'novo' && (
-                <form onSubmit={adicionarBarril} className="bg-white p-5 rounded-xl border border-[#E6C280]/40 shadow-lg space-y-4">
-                  <h2 className="font-extrabold text-gray-800 text-base border-b pb-2 text-[#2D1810]">
+                <form onSubmit={adicionarBarril} className="bg-white p-5 rounded-xl border border-[#E6C280]/40 shadow-lg space-y-3">
+                  <h2 className="font-black text-gray-800 text-base border-b pb-2 text-[#2D1810]">
                     Cadastrar Novo Barril
                   </h2>
 
@@ -247,28 +263,45 @@
                       placeholder="Ex: B-004"
                       value={novoBarril.id}
                       onChange={(e) => setNovoBarril({...novoBarril, id: e.target.value})}
-                      className="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:bg-white"
+                      className="w-full p-2 border rounded text-sm bg-gray-50"
                       required
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Tipo de Madeira *</label>
-                    <select 
-                      value={novoBarril.tipo}
-                      onChange={(e) => setNovoBarril({...novoBarril, tipo: e.target.value})}
-                      className="w-full p-2.5 border rounded-lg text-sm bg-gray-50"
-                    >
-                      <option>Carvalho Americano</option>
-                      <option>Carvalho Francês</option>
-                      <option>Amburana</option>
-                      <option>Bálsamo</option>
-                      <option>Jequitibá Rosa</option>
-                      <option>Cana-fístula</option>
-                    </select>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Madeira *</label>
+                      <select 
+                        value={novoBarril.tipo}
+                        onChange={(e) => setNovoBarril({...novoBarril, tipo: e.target.value})}
+                        className="w-full p-2 border rounded text-sm bg-gray-50"
+                      >
+                        <option>Carvalho Americano</option>
+                        <option>Carvalho Francês</option>
+                        <option>Amburana</option>
+                        <option>Bálsamo</option>
+                        <option>Jequitibá Rosa</option>
+                        <option>Cana-fístula</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Líquido *</label>
+                      <select 
+                        value={novoBarril.liquido}
+                        onChange={(e) => setNovoBarril({...novoBarril, liquido: e.target.value})}
+                        className="w-full p-2 border rounded text-sm bg-gray-50"
+                      >
+                        <option>Whisky</option>
+                        <option>Cachaça</option>
+                        <option>Cachaça Premium</option>
+                        <option>Gin</option>
+                        <option>Rum</option>
+                      </select>
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Capacidade (L)</label>
                       <input 
@@ -276,7 +309,7 @@
                         placeholder="Ex: 200"
                         value={novoBarril.capacidade}
                         onChange={(e) => setNovoBarril({...novoBarril, capacidade: e.target.value})}
-                        className="w-full p-2.5 border rounded-lg text-sm bg-gray-50"
+                        className="w-full p-2 border rounded text-sm bg-gray-50"
                       />
                     </div>
                     <div>
@@ -284,7 +317,7 @@
                       <select 
                         value={novoBarril.status}
                         onChange={(e) => setNovoBarril({...novoBarril, status: e.target.value})}
-                        className="w-full p-2.5 border rounded-lg text-sm bg-gray-50"
+                        className="w-full p-2 border rounded text-sm bg-gray-50"
                       >
                         <option>Em Maturação</option>
                         <option>Pronto para Envase</option>
@@ -300,7 +333,7 @@
                       placeholder="Ex: L-2024-01"
                       value={novoBarril.lote}
                       onChange={(e) => setNovoBarril({...novoBarril, lote: e.target.value})}
-                      className="w-full p-2.5 border rounded-lg text-sm bg-gray-50"
+                      className="w-full p-2 border rounded text-sm bg-gray-50"
                     />
                   </div>
 
@@ -310,21 +343,21 @@
                       type="date" 
                       value={novoBarril.dataEntrada}
                       onChange={(e) => setNovoBarril({...novoBarril, dataEntrada: e.target.value})}
-                      className="w-full p-2.5 border rounded-lg text-sm bg-gray-50"
+                      className="w-full p-2 border rounded text-sm bg-gray-50"
                     />
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Observações</label>
                     <textarea 
-                      placeholder="Notas adicionais..."
+                      placeholder="Histórico, notas de prova..."
                       value={novoBarril.observacao}
                       onChange={(e) => setNovoBarril({...novoBarril, observacao: e.target.value})}
-                      className="w-full p-2.5 border rounded-lg text-sm bg-gray-50 h-20"
+                      className="w-full p-2 border rounded text-sm bg-gray-50 h-16"
                     ></textarea>
                   </div>
 
-                  <button type="submit" className="w-full py-3 bg-[#2D1810] text-[#E6C280] font-bold rounded-lg shadow">
+                  <button type="submit" className="w-full py-3 bg-[#2D1810] text-[#E6C280] font-bold rounded shadow">
                     Salvar Registro de Barril
                   </button>
                 </form>
