@@ -9,14 +9,175 @@
     <!-- React & React DOM -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- Babel para compilar JSX no navegador -->
+    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
   </head>
   <body class="bg-[#FDFBF7]">
     <div id="root"></div>
 
-    <script type="text/babel" data-type="module" src="/App.jsx"></script>
+    <script type="text/babel">
+      const { useState, useEffect } = React;
+
+      // Ícones SVG Inline
+      const BarrelIcon = () => (
+        <svg class="w-6 h-6 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+      );
+
+      function App() {
+        const [barris, setBarris] = useState(() => {
+          const salvos = localStorage.getItem('barris_lamas');
+          return salvos ? JSON.parse(salvos) : [
+            { id: 'B-001', tipo: 'Carvalho Americano', lote: 'L-2023-A', capacidade: 200, dataEntrada: '2023-01-15', observacao: 'Primeiro uso - Whisky' },
+            { id: 'B-002', tipo: 'Carvalho Francês', lote: 'L-2023-B', capacidade: 225, dataEntrada: '2023-03-20', observacao: 'Envelhecimento Cachaça' }
+          ];
+        });
+
+        const [abaAtiva, setAbaAtiva] = useState('lista');
+        const [novoBarril, setNovoBarril] = useState({ id: '', tipo: 'Carvalho Americano', lote: '', capacidade: '', dataEntrada: '', observacao: '' });
+
+        useEffect(() => {
+          localStorage.setItem('barris_lamas', JSON.stringify(barris));
+        }, [barris]);
+
+        const adicionarBarril = (e) => {
+          e.preventDefault();
+          if (!novoBarril.id) return alert('Por favor, informe o ID do barril.');
+          setBarris([...barris, novoBarril]);
+          setNovoBarril({ id: '', tipo: 'Carvalho Americano', lote: '', capacidade: '', dataEntrada: '', observacao: '' });
+          setAbaAtiva('lista');
+        };
+
+        return (
+          <div className="min-h-screen pb-12">
+            {/* Header */}
+            <header className="bg-[#2D1810] text-[#E6C280] p-4 shadow-lg text-center">
+              <h1 className="text-xl font-bold flex items-center justify-center">
+                <BarrelIcon />
+                Controle de Maturação Lamas
+              </h1>
+              <p className="text-xs text-[#C5A059] mt-1">Lamas Destilaria • Sistema de Adega</p>
+            </header>
+
+            {/* Menu de Navegação */}
+            <div className="flex justify-center bg-[#3D2317] text-white text-sm">
+              <button 
+                onClick={() => setAbaAtiva('lista')}
+                className={`flex-1 py-3 text-center font-medium transition-colors ${abaAtiva === 'lista' ? 'bg-[#C5A059] text-black font-bold' : 'hover:bg-[#4A2D1F]'}`}
+              >
+                Barris Cadastrados ({barris.length})
+              </button>
+              <button 
+                onClick={() => setAbaAtiva('novo')}
+                className={`flex-1 py-3 text-center font-medium transition-colors ${abaAtiva === 'novo' ? 'bg-[#C5A059] text-black font-bold' : 'hover:bg-[#4A2D1F]'}`}
+              >
+                + Novo Barril
+              </button>
+            </div>
+
+            {/* Conteúdo Principal */}
+            <main className="max-w-md mx-auto p-4">
+              {abaAtiva === 'lista' ? (
+                <div className="space-y-3">
+                  {barris.map((b) => (
+                    <div key={b.id} className="bg-white p-4 rounded-xl border border-[#E6C280]/40 shadow-sm">
+                      <div className="flex justify-between items-start border-b border-gray-100 pb-2 mb-2">
+                        <div>
+                          <span className="text-xs font-bold bg-[#2D1810] text-[#E6C280] px-2 py-0.5 rounded">
+                            {b.id}
+                          </span>
+                          <h3 className="font-bold text-gray-800 text-base mt-1">{b.tipo}</h3>
+                        </div>
+                        <span className="text-xs font-medium text-amber-800 bg-amber-50 px-2 py-1 rounded-full border border-amber-200">
+                          {b.capacidade} L
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-600 space-y-1">
+                        <p><strong>Lote:</strong> {b.lote || 'N/A'}</p>
+                        <p><strong>Data de Entrada:</strong> {b.dataEntrada}</p>
+                        {b.observacao && <p className="italic text-gray-500 mt-2 bg-gray-50 p-2 rounded">{b.observacao}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <form onSubmit={adicionarBarril} className="bg-white p-5 rounded-xl border border-[#E6C280]/40 shadow-sm space-y-4">
+                  <h2 className="font-bold text-gray-800 text-lg border-b pb-2">Cadastrar Novo Barril</h2>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Identificação / Nº Barril</label>
+                    <input 
+                      type="text" 
+                      placeholder="Ex: B-003"
+                      value={novoBarril.id}
+                      onChange={(e) => setNovoBarril({...novoBarril, id: e.target.value})}
+                      className="w-full p-2.5 border rounded-lg text-sm bg-gray-50 focus:bg-white"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Tipo de Madeira</label>
+                    <select 
+                      value={novoBarril.tipo}
+                      onChange={(e) => setNovoBarril({...novoBarril, tipo: e.target.value})}
+                      className="w-full p-2.5 border rounded-lg text-sm bg-gray-50"
+                    >
+                      <option>Carvalho Americano</option>
+                      <option>Carvalho Francês</option>
+                      <option>Bálsamo</option>
+                      <option>Jequitibá Rosa</option>
+                      <option>AmbURana</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Lote do Destilado</label>
+                    <input 
+                      type="text" 
+                      placeholder="Ex: L-2024-01"
+                      value={novoBarril.lote}
+                      onChange={(e) => setNovoBarril({...novoBarril, lote: e.target.value})}
+                      className="w-full p-2.5 border rounded-lg text-sm bg-gray-50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Capacidade (L)</label>
+                    <input 
+                      type="number" 
+                      placeholder="Ex: 200"
+                      value={novoBarril.capacidade}
+                      onChange={(e) => setNovoBarril({...novoBarril, capacidade: e.target.value})}
+                      className="w-full p-2.5 border rounded-lg text-sm bg-gray-50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Data de Entrada</label>
+                    <input 
+                      type="date" 
+                      value={novoBarril.dataEntrada}
+                      onChange={(e) => setNovoBarril({...novoBarril, dataEntrada: e.target.value})}
+                      className="w-full p-2.5 border rounded-lg text-sm bg-gray-50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Observações</label>
+                    <textarea 
+                      placeholder="Notas sobre o barril..."
+                      value={novoBarril.observacao}
+                      onChange={(e) => setNovoBarril({...novoBarril, observacao: e.target.value})}
+                      className="w-full p-2.5 border rounded-lg text-sm bg-gray-50 h-20"
+                    ></textarea>
+                  </div>
+                  <button type="submit" className="w-full py-3 bg-[#2D1810] text-[#E6C280] font-bold rounded-lg shadow">
+                    Salvar Barril
+                  </button>
+                </form>
+              )}
+            </main>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
   </body>
 </html>
